@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Presentasi Tesis – Prediksi Nilai Tukar Rupiah dengan Multivariate Deep Learning</title>
+<meta content="Presentasi tesis magister: Multivariate Deep Learning Framework untuk Prediksi Nilai Tukar USD/IDR, Universitas Nusa Putra." name="description"/>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+  :root {
+    --primary: #961d5a;
+    --primary-light: #c82677;
+    --primary-dark: #63123a;
+    --secondary: #f4f4f9;
+    --text-dark: #2d3436;
+    --text-light: #555e6e;
+    --white: #ffffff;
+    --bg-color: #f8f9fa;
+    --accent: #ff7675;
+    --gradient: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    --shadow: 0 10px 30px rgba(150, 29, 90, 0.1);
+    --shadow-hover: 0 15px 40px rgba(150, 29, 90, 0.2);
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+    --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    --teal: #00b4d8;
+    --green: #00b894;
+    --orange: #e17055;
+    --blue: #0984e3;
+    --purple: #6c5ce7;
+    --yellow: #fdcb6e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+  body { background-color: var(--bg-color); color: var(--text-dark); overflow: hidden; }
+
+  .presentation { width: 100vw; height: 100vh; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+
+  .slide {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    padding: 4rem 5rem 5rem 5rem;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.7s ease-in-out, transform 0.7s ease-in-out;
+    transform: scale(0.96);
+    background-color: var(--white);
+    display: flex; flex-direction: column; justify-content: center;
+    overflow-y: auto; overflow-x: hidden;
+  }
+
+  .slide.active { opacity: 1; visibility: visible; transform: scale(1); z-index: 10; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar { position: fixed; top: 0; left: 0; height: 5px; background: var(--gradient); width: 0%; transition: width 0.3s ease; z-index: 100; }
+
+  /* ── CONTROLS ── */
+  .controls { position: fixed; bottom: 1.8rem; right: 2.5rem; display: flex; gap: 0.8rem; z-index: 100; }
+
+  .btn-control {
+    background: var(--glass-bg); border: var(--glass-border); width: 48px; height: 48px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--primary); font-size: 1.1rem;
+    box-shadow: var(--shadow); transition: var(--transition); backdrop-filter: blur(10px);
+  }
+  .btn-control:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); background: var(--primary); color: var(--white); }
+
+  .slide-number {
+    position: fixed; bottom: 1.8rem; left: 2.5rem; font-weight: 600; color: var(--text-light);
+    z-index: 100; font-size: 1rem; background: var(--glass-bg); padding: 0.45rem 1rem;
+    border-radius: 20px; backdrop-filter: blur(5px); box-shadow: var(--shadow);
+  }
+
+  /* ── TYPOGRAPHY ── */
+  h1, h2, h3 { color: var(--primary); margin-bottom: 0.8rem; }
+
+  .slide-title {
+    font-size: 2.3rem; font-weight: 700; margin-bottom: 1.5rem;
+    position: relative; display: inline-block; line-height: 1.25;
+  }
+  .slide-title::after {
+    content: ''; position: absolute; bottom: -8px; left: 0;
+    width: 55px; height: 4px; background: var(--gradient); border-radius: 2px;
+  }
+  .slide-subtitle { font-size: 1rem; color: var(--text-light); margin-bottom: 1.2rem; font-style: italic; }
+
+  .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: center; flex: 1; }
+  .text-content { font-size: 1.05rem; line-height: 1.8; color: var(--text-light); }
+  .text-content ul { list-style-type: none; }
+  .text-content ul li { position: relative; padding-left: 1.8rem; margin-bottom: 0.8rem; }
+  .text-content ul li::before { content: '\f101'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; left: 0; color: var(--primary); }
+
+  /* ── COVER SLIDE ── */
+  .cover-slide { text-align: center; justify-content: center; align-items: center; background: var(--gradient); color: var(--white); padding: 3rem 5rem; }
+  .cover-slide h1 { color: var(--white); font-size: 2.6rem; margin-bottom: 0.8rem; text-shadow: 2px 4px 10px rgba(0,0,0,0.2); line-height: 1.3; }
+  .cover-slide h2 { color: rgba(255,255,255,0.85); font-weight: 300; font-size: 1.4rem; margin-bottom: 2rem; }
+  .cover-badge { background: rgba(255,255,255,0.18); padding: 0.6rem 1.8rem; border-radius: 30px; backdrop-filter: blur(10px); display: inline-block; font-size: 1rem; letter-spacing: 1.5px; margin-bottom: 1.8rem; border: 1px solid rgba(255,255,255,0.3); }
+  .cover-meta { display: flex; gap: 2rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap; }
+  .cover-meta-item { background: rgba(255,255,255,0.12); padding: 0.6rem 1.2rem; border-radius: 10px; font-size: 0.9rem; color: rgba(255,255,255,0.9); border: 1px solid rgba(255,255,255,0.2); }
+
+  /* ── SHAPES (decorative) ── */
+  .shape { position: absolute; z-index: -1; opacity: 0.08; }
+  .shape-1 { top: -80px; right: -80px; width: 350px; height: 350px; border-radius: 50%; background: var(--gradient); filter: blur(50px); }
+  .shape-2 { bottom: -100px; left: -80px; width: 400px; height: 400px; border-radius: 50%; background: var(--primary); filter: blur(60px); }
+
+  /* ── CARDS ── */
+  .cards-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+  .card {
+    background: var(--glass-bg); border: var(--glass-border); padding: 1.6rem;
+    border-radius: 16px; box-shadow: var(--shadow); transition: var(--transition);
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--gradient); transform: scaleX(0); transform-origin: left; transition: var(--transition); }
+  .card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); }
+  .card:hover::before { transform: scaleX(1); }
+  .card i { font-size: 2.2rem; color: var(--primary); margin-bottom: 0.8rem; display: inline-block; }
+  .card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text-dark); }
+  .card p { font-size: 0.9rem; color: var(--text-light); line-height: 1.6; }
+
+  /* ── VISUAL CONTAINER ── */
+  .visual-container { background: var(--white); border-radius: 16px; padding: 1.5rem; box-shadow: var(--shadow); display: flex; justify-content: center; align-items: center; position: relative; }
+
+  /* ── TABLE ── */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 0.92rem; color: var(--text-light); }
+  .tbl th { padding: 10px 8px; text-align: left; color: var(--white); background: var(--gradient); font-weight: 600; }
+  .tbl th:first-child { border-radius: 8px 0 0 0; }
+  .tbl th:last-child { border-radius: 0 8px 0 0; }
+  .tbl td { padding: 9px 8px; border-bottom: 1px solid #ececf1; }
+  .tbl tr:hover td { background: rgba(150,29,90,0.04); }
+  .tbl tr.best td { background: rgba(0,184,148,0.08); font-weight: 700; }
+
+  /* ── HIGHLIGHT BOX ── */
+  .hbox { border-radius: 12px; padding: 1rem 1.4rem; margin-bottom: 0.9rem; border-left: 4px solid; }
+  .hbox.blue { background: #e8f4fd; border-color: var(--blue); }
+  .hbox.green { background: #e8f8f5; border-color: var(--green); }
+  .hbox.orange { background: #fdf3e8; border-color: var(--orange); }
+  .hbox.purple { background: #f0ecfd; border-color: var(--purple); }
+  .hbox.pink { background: #fde8f0; border-color: var(--primary); }
+  .hbox h4 { font-size: 0.95rem; margin-bottom: 0.4rem; }
+  .hbox.blue h4 { color: var(--blue); }
+  .hbox.green h4 { color: #00967a; }
+  .hbox.orange h4 { color: var(--orange); }
+  .hbox.purple h4 { color: var(--purple); }
+  .hbox.pink h4 { color: var(--primary); }
+  .hbox p, .hbox ul { font-size: 0.88rem; color: var(--text-light); line-height: 1.6; }
+  .hbox ul { padding-left: 1rem; margin-top: 0.3rem; }
+
+  /* ── BADGE ── */
+  .badge { display: inline-block; padding: 0.25rem 0.7rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin: 0.15rem; }
+  .badge.teal { background: #d0f4f8; color: #0c6472; }
+  .badge.green { background: #d4edda; color: #155724; }
+  .badge.orange { background: #fde8df; color: #7a3700; }
+  .badge.blue { background: #d1ecf1; color: #0c5460; }
+  .badge.purple { background: #ede9ff; color: #3d1f8e; }
+  .badge.pink { background: #fde8f0; color: var(--primary-dark); }
+
+  /* ── METRIC BOX ── */
+  .metric-row { display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap; }
+  .metric-box { flex: 1; min-width: 100px; background: var(--secondary); border-radius: 12px; padding: 1rem; text-align: center; border-top: 4px solid var(--primary); }
+  .metric-box .metric-val { font-size: 1.6rem; font-weight: 800; color: var(--primary); }
+  .metric-box .metric-label { font-size: 0.78rem; color: var(--text-light); margin-top: 0.2rem; line-height: 1.4; }
+
+  /* ── PIPELINE STEP ── */
+  .pipeline { display: flex; flex-direction: column; gap: 0.6rem; }
+  .pipeline-step { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1.1rem; background: var(--secondary); border-radius: 10px; transition: var(--transition); }
+  .pipeline-step:hover { background: rgba(150,29,90,0.07); transform: translateX(5px); }
+  .pipeline-num { width: 32px; height: 32px; border-radius: 50%; background: var(--gradient); color: white; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.9rem; }
+
+  /* ── SLR TABLE ── */
+  .slr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+  .slr-item { background: var(--secondary); border-radius: 10px; padding: 0.9rem 1.1rem; border-left: 3px solid var(--primary); }
+  .slr-item .slr-ref { font-size: 0.75rem; color: var(--primary); font-weight: 600; margin-bottom: 0.3rem; }
+  .slr-item .slr-finding { font-size: 0.84rem; color: var(--text-dark); line-height: 1.5; }
+  .slr-item .slr-gap { font-size: 0.8rem; color: var(--orange); margin-top: 0.25rem; font-style: italic; }
+
+  /* ── GAP TABLE ── */
+  .gap-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .gap-table th { background: var(--gradient); color: white; padding: 9px 10px; text-align: center; font-weight: 600; }
+  .gap-table td { padding: 8px 10px; border-bottom: 1px solid #ececf1; text-align: center; vertical-align: middle; }
+  .gap-table tr:hover td { background: rgba(150,29,90,0.03); }
+  .gap-table .check { color: var(--green); font-size: 1rem; }
+  .gap-table .cross { color: #e74c3c; font-size: 0.9rem; }
+  .gap-table .this-study td { background: rgba(150,29,90,0.06); font-weight: 600; }
+  .gap-table .this-study td:first-child { color: var(--primary); }
+
+  /* ── NOVELTY PILLARS ── */
+  .novelty-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1.2rem; }
+  .novelty-card { background: var(--gradient); color: white; border-radius: 14px; padding: 1.3rem 1rem; text-align: center; transition: var(--transition); box-shadow: var(--shadow); }
+  .novelty-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: var(--shadow-hover); }
+  .novelty-card .nv-icon { font-size: 2rem; margin-bottom: 0.7rem; display: block; }
+  .novelty-card .nv-num { font-size: 0.75rem; letter-spacing: 1px; opacity: 0.75; text-transform: uppercase; margin-bottom: 0.3rem; }
+  .novelty-card .nv-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .novelty-card .nv-desc { font-size: 0.78rem; opacity: 0.88; line-height: 1.5; }
+
+  /* ── AGENDA SLIDE ── */
+  .agenda-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-top: 1rem; }
+  .agenda-item { display: flex; align-items: center; gap: 0.9rem; padding: 0.7rem 1rem; border-radius: 10px; background: var(--secondary); transition: var(--transition); }
+  .agenda-item:hover { background: rgba(150,29,90,0.08); transform: translateX(4px); }
+  .agenda-num { width: 30px; height: 30px; border-radius: 50%; background: var(--gradient); color: white; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .agenda-text { font-size: 0.92rem; color: var(--text-dark); font-weight: 500; }
+
+  /* ── CLOSING SLIDE ── */
+  .closing-slide { text-align: center; justify-content: center; align-items: center; background: var(--gradient); color: var(--white); }
+  .closing-slide h1 { color: var(--white); font-size: 2.6rem; margin-bottom: 1.2rem; }
+  .closing-slide p { font-size: 1.2rem; color: rgba(255,255,255,0.85); margin-bottom: 1.5rem; }
+
+  /* ── SCROLLBAR ── */
+  .slide::-webkit-scrollbar { width: 6px; }
+  .slide::-webkit-scrollbar-track { background: #f0f0f0; }
+  .slide::-webkit-scrollbar-thumb { background: #d4a5b4; border-radius: 3px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .slide { padding: 4.5rem 1.5rem 4.5rem; justify-content: flex-start; }
+    .slide-title { font-size: 1.5rem; }
+    .content-grid, .slr-grid, .agenda-grid { grid-template-columns: 1fr; }
+    .novelty-grid { grid-template-columns: 1fr 1fr; }
+    .gap-table { font-size: 0.78rem; }
+  }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="presentation">
+
+<!-- ============================================================ -->
+<!-- SLIDE 1: COVER -->
+<!-- ============================================================ -->
+<div class="slide cover-slide active" id="slide-1">
+  <div class="shape shape-1"></div>
+  <div class="shape shape-2"></div>
+  <img alt="Logo Universitas Nusa Putra" src="LOGO-UNIVERSITAS-NUSA-PUTRA.png"
+       style="height:70px; margin-bottom:1.5rem; background:white; padding:5px 14px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.2);" onerror="this.style.display='none'"/>
+  <div class="cover-badge">UNIVERSITAS NUSA PUTRA &nbsp;|&nbsp; PROGRAM MAGISTER INFORMATIKA</div>
+  <h1>Multivariate Deep Learning Framework untuk Prediksi Nilai Tukar Rupiah (USD/IDR)</h1>
+  <h2>Studi Komparatif dengan Pengujian Signifikansi Statistik</h2>
+  <div class="cover-meta">
+    <div class="cover-meta-item"><i class="fas fa-user" style="margin-right:6px;"></i>Asep Surahman Sulaeman</div>
+    <div class="cover-meta-item"><i class="fas fa-university" style="margin-right:6px;"></i>Program Studi Magister Informatika</div>
+    <div class="cover-meta-item"><i class="fas fa-calendar" style="margin-right:6px;"></i>2026</div>
+    <div class="cover-meta-item"><i class="fas fa-journal-whills" style="margin-right:6px;"></i>IJIMAI Submission</div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 2: AGENDA / OUTLINE -->
+<!-- ============================================================ -->
+<div class="slide" id="slide-2">
+  <div class="shape shape-1"></div>
+  <h2 class="slide-title">Sistematika Presentasi</h2>
+  <p class="slide-subtitle">Alur pembahasan disusun mengikuti struktur penulisan jurnal internasional</p>
+  <div class="agenda-grid">
+    <div class="agenda-item"><div class="agenda-num">01</div><div class="agenda-text">Abstrak &amp; Ringkasan Penelitian</div></div>
+    <div class="agenda-item"><div class="agenda-num">02</div><div class="agenda-text">Latar Belakang &amp; Permasalahan</div></div>
+    <div class="agenda-item"><div class="agenda-num">03</div><div class="agenda-text">Kajian Literatur Sistematis (SLR)</div></div>
+    <div class="agenda-item"><div class="agenda-num">04</div><div class="agenda-text">Kesenjangan Penelitian (Research Gap)</div></div>
+    <div class="agenda-item"><div class="agenda-num">05</div><div class="agenda-text">Kebaruan Penelitian (Novelty)</div></div>
+    <div class="agenda-item"><div class="agenda-num">06</div><div class="agenda-text">Rumusan Masalah &amp; Tujuan Penelitian</div></div>
+    <div class="agenda-item"><div class="agenda-num">07</div><div class="agenda-text">Metodologi: Data &amp; Pembagian Data</div></div>
+    <div class="agenda-item"><div class="agenda-num">08</div><div class="agenda-text">Rekayasa Fitur &amp; Sliding Window</div></div>
+    <div class="agenda-item"><div class="agenda-num">09</div><div class="agenda-text">Arsitektur Model &amp; Konfigurasi</div></div>
+    <div class="agenda-item"><div class="agenda-num">10</div><div class="agenda-text">Analisis Korelasi Antar Variabel</div></div>
+    <div class="agenda-item"><div class="agenda-num">11</div><div class="agenda-text">Hasil Evaluasi Kinerja Model</div></div>
+    <div class="agenda-item"><div class="agenda-num">12</div><div class="agenda-text">Uji Signifikansi Statistik (DM Test)</div></div>
+    <div class="agenda-item"><div class="agenda-num">13</div><div class="agenda-text">Analisis Fitur Paling Berpengaruh</div></div>
+    <div class="agenda-item"><div class="agenda-num">14</div><div class="agenda-text">Studi Ablasi &amp; Parameter Optimal</div></div>
+    <div class="agenda-item"><div class="agenda-num">15</div><div class="agenda-text">Diskusi &amp; Implikasi Praktis</div></div>
+    <div class="agenda-item"><div class="agenda-num">16</div><div class="agenda-text">Kesimpulan &amp; Arah Penelitian Lanjutan</div></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 3: ABSTRACT -->
+<!-- ============================================================ -->
+<div class="slide" id="slide-3">
+  <div class="shape shape-1"></div>
+  <h2 class="slide-title">Abstrak Penelitian</h2>
+  <p class="slide-subtitle">Ringkasan keseluruhan penelitian secara komprehensif</p>
+  <div class="content-grid" style="align-items:flex-start;">
+    <div>
+      <p style="font-size:0.95rem; line-height:1.8; color:var(--text-light); text-align:justify; margin-bottom:1rem;">
+        Nilai tukar Dolar AS terhadap Rupiah (USD/IDR) merupakan indikator penting bagi ekonomi Indonesia. Penelitian ini membangun sebuah <strong>sistem prediksi berbasis deep learning</strong> yang menggunakan <strong>9 indikator keuangan dan ekonomi</strong> secara bersamaan — yaitu IHSG, Minyak Mentah, Emas, Brent Oil, Nasdaq, S&amp;P 500, Dow Jones, dan Bitcoin — untuk memprediksi kurs USD/IDR harian selama periode 2016–2026.
+      </p>
+      <p style="font-size:0.95rem; line-height:1.8; color:var(--text-light); text-align:justify;">
+        Dari 9 variabel dasar tersebut, dibentuk <strong>42 fitur input</strong> (termasuk indikator teknikal dan data historis). Normalisasi data dilakukan <strong>hanya dari data latih</strong> agar tidak terjadi kebocoran informasi dari data uji. Empat model deep learning (LSTM, BiLSTM, GRU, CNN-LSTM) diuji bersama tiga model pembanding (XGBoost, ARIMA, dan Random Walk).
+      </p>
+    </div>
+    <div>
+      <div class="hbox pink" style="margin-bottom:0.8rem;">
+        <h4><i class="fas fa-trophy" style="margin-right:6px;"></i>Model Terbaik: BiLSTM</h4>
+        <div class="metric-row" style="margin-top:0.6rem;">
+          <div class="metric-box"><div class="metric-val">87.4</div><div class="metric-label">RMSE (IDR)</div></div>
+          <div class="metric-box"><div class="metric-val">0.53%</div><div class="metric-label">MAPE</div></div>
+          <div class="metric-box"><div class="metric-val">0.947</div><div class="metric-label">R²</div></div>
+        </div>
+      </div>
+      <div class="hbox blue">
+        <h4><i class="fas fa-flask" style="margin-right:6px;"></i>Diuji Secara Statistik</h4>
+        <p>Keunggulan BiLSTM <strong>bukan kebetulan</strong> — dibuktikan melalui <strong>Diebold-Mariano Test</strong> (uji statistik yang membandingkan akurasi prediksi antar model). Seluruh perbandingan menunjukkan p &lt; 0.05, artinya perbedaan kinerja bermakna secara statistik.</p>
+      </div>
+      <div class="hbox green" style="margin-top:0.8rem;">
+        <h4><i class="fas fa-lightbulb" style="margin-right:6px;"></i>Kontribusi Utama</h4>
+        <p>Menyediakan kerangka kerja prediksi kurs yang <strong>dapat direproduksi</strong>, tervalidasi statistik, dan dilengkapi analisis fitur yang paling berpengaruh terhadap prediksi.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 4: LATAR BELAKANG -->
+<!-- ============================================================ -->
+<div class="slide" id="slide-4">
+  <div class="shape shape-2"></div>
+  <h2 class="slide-title">Latar Belakang &amp; Permasalahan</h2>
+  <p class="slide-subtitle">Mengapa prediksi kurs Rupiah itu sulit, dan apa solusi yang ditawarkan?</p>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1rem;">
+    <div class="hbox blue">
+      <h4><i class="fas fa-exclamation-triangle" style="margin-right:6px;"></i>Masalah: Model Tradisional Gagal</h4>
+      <ul>
+        <li>Model klasik seperti <strong>ARIMA dan GARCH</strong> mengasumsikan hubungan antar variabel itu <em>linier</em> (garis lurus) dan stabil — padahal data kurs sangat fluktuatif dan tidak stabil</li>
+        <li>Studi legendaris <em>Meese &amp; Rogoff (1983)</em> membuktikan bahwa model ekonometrika <strong>gagal mengalahkan tebakan sederhana</strong> (Random Walk: "kurs besok = kurs hari ini")</li>
+        <li>Faktor-faktor eksternal seperti <strong>kebijakan The Fed, guncangan harga minyak, dan pandemi COVID-19</strong> tidak bisa ditangkap oleh model sederhana</li>
+      </ul>
+    </div>
+    <div class="hbox orange">
+      <h4><i class="fas fa-chart-line" style="margin-right:6px;"></i>Konteks: Kurs Rupiah Itu Kompleks</h4>
+      <ul>
+        <li>Kurs USD/IDR mencerminkan banyak hal sekaligus: <strong>inflasi, neraca perdagangan, harga komoditas ekspor</strong>, dan kepercayaan investor terhadap kebijakan Bank Indonesia</li>
+        <li>Ketika Rupiah melemah → harga barang impor naik, investor asing keluar dari pasar saham Indonesia, dan perusahaan berliabilitas dolar terkena tekanan</li>
+        <li>Sepanjang 2016–2026 terdapat <strong>3 fase berbeda</strong>: pelemahan bertahap (2016–2019), guncangan COVID-19 (2020), dan pengetatan suku bunga AS (2022–2024)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="hbox green">
+    <h4><i class="fas fa-brain" style="margin-right:6px;"></i>Solusi: Deep Learning yang Mampu Menangkap Pola Kompleks</h4>
+    <p>Model deep learning (LSTM, BiLSTM, GRU) dirancang untuk <strong>memahami pola berurutan dalam data</strong> — seperti tren naik/turun dan hubungan antar variabel yang tidak sederhana. Kemampuan ini menjadikannya solusi yang tepat untuk memprediksi kurs di negara berkembang seperti Indonesia.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 5: SLR - KAJIAN LITERATUR SISTEMATIS -->
+<!-- ============================================================ -->
+<div class="slide" id="slide-5">
+  <div class="shape shape-1"></div>
+  <h2 class="slide-title">Kajian Literatur Sistematis (SLR)</h2>
+  <p class="slide-subtitle">Tinjauan 10 studi terdahulu beserta kelemahan yang diidentifikasi untuk memotivasi penelitian ini</p>
+
+  <div style="overflow-x:auto; margin-bottom:1rem; flex-grow:1; max-height: 55vh; overflow-y:auto; border-radius: 8px; border: 1px solid #ddd;">
+    <table class="gap-table" style="font-size:0.8rem; margin:0; width:100%; border-collapse: collapse;">
+      <thead style="position: sticky; top: 0; background: var(--gradient); color: white; z-index: 10;">
+        <tr>
+          <th style="width:3%; padding: 10px;">No</th>
+          <th style="width:20%; padding: 10px;">Judul &amp; Peneliti (Tahun)</th>
+          <th style="width:8%; padding: 10px;">Peringkat</th>
+          <th style="width:14%; padding: 10px;">Metode</th>
+          <th style="width:12%; padding: 10px;">Dataset</th>
+          <th style="width:12%; padding: 10px;">Temuan Utama</th>
+          <th style="width:10%; padding: 10px;">Uji Statistik &amp; Anti-Leakage</th>
+          <th style="width:21%; padding: 10px;">Kelemahan / Gap</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 10px;">1</td>
+          <td style="padding: 10px;"><em>Empirical exchange rate models</em><br><b>Meese &amp; Rogoff (1983)</b></td>
+          <td style="padding: 10px;"><span style="background:#961d5a;color:#fff;padding:2px 7px;border-radius:10px;font-size:.72rem;font-weight:600">Scopus Q1</span></td>
+          <td style="padding: 10px;">Model Ekonometrika</td>
+          <td style="padding: 10px;">Kurs Valas</td>
+          <td style="padding: 10px; color:#c62828">Model gagal mengalahkan tebakan acak</td>
+          <td style="padding: 10px; color:#999;font-size:.75rem">Belum relevan</td>
+          <td style="padding: 10px; color:#555">Studi sangat lama, belum menggunakan deep learning sama sekali.</td>
+        </tr>
+        <tr style="background:#fafafa; border-bottom: 1px solid #eee;">
+          <td style="padding: 10px;">2</td>
+          <td style="padding: 10px;"><em>GARCH heteroskedasticity</em><br><b>Bollerslev (1986)</b></td>
+          <td style="padding: 10px;"><span style="background:#961d5a;color:#fff;padding:2px 7px;border-radius:10px;font-size:.72rem;font-weight:600">Scopus Q1</span></td>
+          <td style="padding: 10px;">GARCH</td>
+          <td style="padding: 10px;">Data Keuangan</td>
+          <td style="padding: 10px; color:#c62828">Baik untuk volatilitas, lemah di prediksi</td>
+          <td style="padding: 10px; color:#999;font-size:.75rem">N/A</td>
+          <td style="padding: 10px; color:#555">Hanya menangkap fluktuasi, tidak bisa memodelkan hubungan non-linier.</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 10px;">3</td>
+          <td style="padding: 10px;"><em>Forecasting USD/IDR using ARIMA</em><br><b>Siahaan et al. (2017)</b></td>
+          <td style="padding: 10px;"><span style="background:#6a3fa0;color:#fff;padding:2px 7px;border-radius:10px;font-size:.72rem;font-weight:600">Scopus Q3</span></td>
+          <td style="padding: 10px;">ARIMA</td>
+          <td style="padding: 10px;">USD/IDR Bulanan</td>
+          <td style="padding: 10px; color:#e65100">Error tinggi saat krisis</td>
+          <td style="padding: 10px; color:#999;font-size:.75rem">Tidak ada</td>
+          <td style="padding: 10px; color:#555">Data bulanan (bukan harian), tidak ada uji statistik formal.</td>
+        </tr>
+        <tr style="background:#fafafa; border-bottom: 1px solid #eee;">
+          <td style="padding: 10px;">4</td>
+          <td style="padding: 10px;"><em>Deep learning with LSTM</em><br><b>Fischer &amp; Krauss (2018)</b></td>
+          <td style="padding: 10px;"><span style="background:#961d5a;color:#fff;padding:2px 7px;border-radius:10px;font-size:.72rem;font-weight:600">Scopus Q1</span></td>
+          <td style="padding: 10px;">LSTM</td>
+          <td style="padding: 10px;">Saham AS</td>
+          <td style="padding: 10px; font-weight:700;color:#2e7d32">LSTM lebih baik dari model linier</td>
+          <td style="padding: 10px; color:#555;font-size:.75rem">Ya / Ya</td>
+          <td style="padding: 10px; color:#555">Konteks pasar saham, bukan kurs USD/IDR.</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 10px;">5</td>
+          <td style="padding: 10px;"><em>Comparing ARIMA and LSTM</em><br><b>Siami-Namini et al. (2018)</b></td>
+          <td style="padding: 10px;"><span style="background:#0984e3;color:#fff;padding:2px 7px;border-radius:10px;font-size:.72rem;font-weight:600">IEEE</span></td>
+          <td style="padding: 10px;">LSTM vs ARIMA</td>
+          <td style="padding: 10px;">Data Keuangan</td>
+          <td style="padding: 10px; font-weight:700;color:#2e7d32">LSTM konsisten lebih unggul</td>
+          <td style="padding: 10px; color:#999;font-size:.75rem">Tidak ada</td>
+          <td style="padding: 10px; color:#555">Hanya membandingkan 2 model, tidak menguji 4 arsitektur DL.</td>
+        </tr>
+        <tr style="background:#fafafa; border-bottom: 1px solid #eee;">
+          <td style="padding: 10px;">6</td>
+          <td style="padding: 10px;"><em>CNN-LSTM for gold forecasting</em><br><b>Livieris et al. (2020)</b></td>
+          <td style="padding: 10px;"><span style="background:#961d5a;color:#fff;padding:2px 7px;border-radius:10px;font-size:.72rem;font-weight:600">Scopus Q1</span></td>
+          <td style="padding: 10px;">CNN-LSTM</td>
+          <td style="padding: 10px;">Harga Emas</td>
+          <td style="padding: 10px; font-weight:700;color:#2e7d32">Akurasi tinggi</td>
+          <td style="padding: 10px; color:#999;font-size:.75rem">Tidak ada</td>
+          <td style="padding: 10px; color:#555">Hanya untuk emas, tidak menggunakan 9 indikator makroekonomi.</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 10px;">7</td>
+          <td style="padding: 10px;"><em>Temporal Fusion Transformers</em><br><b>Lim et al. (2021)</b></td>
+          <td style="padding: 10px;"><span style="background:#961d5a;color:#fff;padding:2px 7px;border-radius:10px;font-size:.72rem;font-weight:600">Scopus Q1</span></td>
+          <td style="padding: 10px;">TFT (Transformer)</td>
+          <td style="padding: 10px;">Multi-domain</td>
+          <td style="padding: 10px; font-weight:700;color:#2e7d32">State-of-the-art</td>
+          <td style="padding: 10px; color:#555;font-size:.75rem">Ya / Ya</td>
+          <td style="padding: 10px; color:#555">Arsitektur umum, belum diuji khusus untuk kurs Rupiah.</td>
+        </tr>
+        <tr style="background:#fafafa; border-bottom: 1px solid #eee;">
+          <td style="padding: 10px;">8</td>
+          <td style="padding: 10px;"><em>Hybrid DL with sentiment</em><br><b>Jing et al. (2021)</b></td>
+          <td style="padding: 10px;"><span style="background:#961d5a;color:#fff;padding:2px 7px;border-radius:10px;font-size:.72rem;font-weight:600">Scopus Q1</span></td>
+          <td style="padding: 10px;">DL + Sentimen NLP</td>
+          <td style="padding: 10px;">Harga Saham</td>
+          <td style="padding: 10px; font-weight:700;color:#2e7d32">Sentimen meningkatkan akurasi</td>
+          <td style="padding: 10px; color:#e65100;font-size:.75rem">Sebagian / Tidak</td>
+          <td style="padding: 10px; color:#555">Fokus pada saham berbasis sentimen, bukan data makroekonomi.</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 10px;">9</td>
+          <td style="padding: 10px;"><em>Forecasting: Theory and practice</em><br><b>Petropoulos et al. (2022)</b></td>
+          <td style="padding: 10px;"><span style="background:#961d5a;color:#fff;padding:2px 7px;border-radius:10px;font-size:.72rem;font-weight:600">Scopus Q1</span></td>
+          <td style="padding: 10px;">Meta-analisis</td>
+          <td style="padding: 10px;">Berbagai bidang</td>
+          <td style="padding: 10px; font-weight:700;color:#2e7d32">Neural Network unggul di data kompleks</td>
+          <td style="padding: 10px; color:#999;font-size:.75rem">N/A</td>
+          <td style="padding: 10px; color:#555">Bersifat tinjauan teori, bukan eksperimen langsung pada USD/IDR.</td>
+        </tr>
+        <tr style="background:#fafafa; border-bottom: 1px solid #eee;">
+          <td style="padding: 10px;">10</td>
+          <td style="padding: 10px;"><em>Hybrid DL for exchange rate</em><br><b>Zhao et al. (2023)</b></td>
+          <td style="padding: 10px;"><span style="background:#961d5a;color:#fff;padding:2px 7px;border-radius:10px;font-size:.72rem;font-weight:600">Scopus Q1</span></td>
+          <td style="padding: 10px;">Hybrid DL</td>
+          <td style="padding: 10px;">Kurs Global</td>
+          <td style="padding: 10px; font-weight:700;color:#2e7d32">Prediksi akurat</td>
+          <td style="padding: 10px; color:#e65100;font-size:.75rem">Sebagian / Tidak ada DM Test</td>
+          <td style="padding: 10px; color:#555">Tidak ada uji statistik formal, dan tidak fokus pada Rupiah.</td>
+        </tr>
+        <tr style="background:#e8f5e9;border-top:2px solid #2e7d32">
+          <td style="padding: 10px;"><b>&#9733;</b></td>
+          <td style="padding: 10px;"><b>Penelitian Ini (2026)</b><br><span style="font-size:0.75rem;font-weight:normal;color:#555">Asep Surahman Sulaeman</span></td>
+          <td style="padding: 10px;"><span style="background:#2e7d32;color:#fff;padding:2px 7px;border-radius:10px;font-size:.72rem;font-weight:600">Target Jurnal</span></td>
+          <td style="padding: 10px;"><b>Multivariate BiLSTM</b></td>
+          <td style="padding: 10px;"><b>9 Indikator Harian</b></td>
+          <td style="padding: 10px; font-weight:700;color:#2e7d32"><b>RMSE 87.4<br>MAPE 0.53%</b></td>
+          <td style="padding: 10px; font-weight:700;color:#2e7d32"><b>DM Test (p&lt;0.05)<br>Train-only Scaler</b></td>
+          <td style="padding: 10px; color:#2e7d32; font-weight:600;"><b>Menjawab semua kelemahan: multivariat, anti-leakage, dan uji statistik sekaligus.</b></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="background:rgba(150,29,90,0.06); border-radius:10px; padding:0.8rem 1.2rem; border-left:4px solid var(--primary); display:flex; align-items:center; gap:1rem;">
+    <i class="fas fa-lightbulb" style="color:var(--primary); font-size:1.3rem; flex-shrink:0;"></i>
+    <p style="font-size:0.85rem; color:var(--text-dark); line-height:1.6; margin:0;">
+      <strong>Kesimpulan:</strong> Mayoritas studi terdahulu fokus pada akurasi prediksi saja, tetapi <b>mengabaikan dua hal penting</b>: (1) uji statistik apakah perbedaan kinerja benar-benar bermakna, dan (2) pencegahan kebocoran data. Penelitian ini mengisi kedua kekosongan tersebut.
+    </p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 6: RESEARCH GAP -->
+<!-- ============================================================ -->
+<div class="slide" id="slide-6">
+  <div class="shape shape-2"></div>
+  <h2 class="slide-title">Kesenjangan Penelitian (<em>Research Gap</em>)</h2>
+  <p class="slide-subtitle">Tiga kelemahan utama dari studi terdahulu yang menjadi alasan dilakukannya penelitian ini</p>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1.2rem; margin-bottom:0.8rem">
+    <div class="card" style="border-top:5px solid #c62828;padding:1.2rem; background:white; box-shadow:0 4px 12px rgba(0,0,0,0.05); border-radius:10px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:.8rem">
+        <div style="background:#c62828;color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;flex-shrink:0">G1</div>
+        <h3 style="font-size:0.95rem;color:#c62828">Belum Ada Integrasi Lengkap 9 Indikator Makroekonomi</h3>
+      </div>
+      <div style="background:#fff3f3;border-radius:8px;padding:.8rem;font-size:.82rem;margin-bottom:.6rem;line-height:1.6">
+        <b style="color:#b71c1c">✗ Keadaan Sekarang:</b><br>
+        Studi terdahulu umumnya hanya menggunakan <strong>1–3 variabel</strong> (misalnya hanya harga minyak atau hanya data saham). Belum ada yang menggabungkan 9 indikator sekaligus untuk prediksi kurs Rupiah.
+      </div>
+      <div style="background:#e8f5e9;border-radius:8px;padding:.8rem;font-size:.82rem;line-height:1.6">
+        <b style="color:#2e7d32">✓ Solusi Penelitian Ini:</b><br>
+        Menggunakan <b>9 indikator</b> secara bersamaan (IHSG, Crude Oil, Gold, Brent Oil, Nasdaq, S&amp;P 500, Dow Jones, Bitcoin) untuk menangkap pengaruh dari berbagai sisi.
+      </div>
+    </div>
+
+    <div class="card" style="border-top:5px solid #e65100;padding:1.2rem; background:white; box-shadow:0 4px 12px rgba(0,0,0,0.05); border-radius:10px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:.8rem">
+        <div style="background:#e65100;color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;flex-shrink:0">G2</div>
+        <h3 style="font-size:0.95rem;color:#e65100">Klaim "Model Terbaik" Tanpa Bukti Statistik</h3>
+      </div>
+      <div style="background:#fff8f3;border-radius:8px;padding:.8rem;font-size:.82rem;margin-bottom:.6rem;line-height:1.6">
+        <b style="color:#bf360c">✗ Keadaan Sekarang:</b><br>
+        Banyak penelitian mengklaim "model A lebih baik dari model B" hanya karena selisih angka kecil, <strong>tanpa membuktikan secara statistik</strong> apakah perbedaan itu benar-benar bermakna atau hanya kebetulan.
+      </div>
+      <div style="background:#e8f5e9;border-radius:8px;padding:.8rem;font-size:.82rem;line-height:1.6">
+        <b style="color:#2e7d32">✓ Solusi Penelitian Ini:</b><br>
+        Menggunakan <b>Diebold-Mariano Test</b> (uji formal perbandingan akurasi prediksi) untuk membuktikan bahwa keunggulan BiLSTM <strong>bukan kebetulan</strong> (p &lt; 0.05).
+      </div>
+    </div>
+
+    <div class="card" style="border-top:5px solid #1565c0;padding:1.2rem; background:white; box-shadow:0 4px 12px rgba(0,0,0,0.05); border-radius:10px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:.8rem">
+        <div style="background:#1565c0;color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;flex-shrink:0">G3</div>
+        <h3 style="font-size:0.95rem;color:#1565c0">Data Masa Depan "Bocor" ke Proses Pelatihan</h3>
+      </div>
+      <div style="background:#f3f8ff;border-radius:8px;padding:.8rem;font-size:.82rem;margin-bottom:.6rem;line-height:1.6">
+        <b style="color:#0d47a1">✗ Keadaan Sekarang:</b><br>
+        Banyak studi melakukan normalisasi data <strong>sebelum membagi data</strong> menjadi latih dan uji. Akibatnya, informasi dari data uji "bocor" ke data latih, sehingga hasil terlihat bagus tapi <strong>tidak bisa diandalkan</strong>.
+      </div>
+      <div style="background:#e8f5e9;border-radius:8px;padding:.8rem;font-size:.82rem;line-height:1.6">
+        <b style="color:#2e7d32">✓ Solusi Penelitian Ini:</b><br>
+        Normalisasi hanya dihitung dari <b>data latih saja</b> (train-only scaler), lalu diterapkan ke data uji <strong>tanpa melihat data masa depan</strong> — menjamin hasil prediksi benar-benar jujur.
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:1rem;align-items:center; margin-top: 1rem; background:rgba(150,29,90,0.06); padding: 1rem; border-radius: 10px;">
+    <i class="fas fa-map-signs" style="color:var(--primary);font-size:2rem;flex-shrink:0"></i>
+    <div style="font-size:0.88rem; line-height: 1.6;">
+      <b>Posisi Penelitian Ini:</b> Ketiga kelemahan di atas dijawab <strong>secara bersamaan</strong> dalam satu kerangka eksperimen yang terintegrasi. Ini menjadikan penelitian ini sebagai benchmark yang dapat direproduksi dan kokoh secara metodologis.
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 7: NOVELTY / KEBARUAN -->
+<!-- ============================================================ -->
+<div class="slide" id="slide-7">
+  <div class="shape shape-1"></div>
+  <h2 class="slide-title">Kebaruan Penelitian (<em>Novelty &amp; Contribution</em>)</h2>
+  <p class="slide-subtitle">Empat kontribusi orisinal yang secara langsung menjawab ketiga kesenjangan penelitian</p>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.2rem; margin-bottom: 1.5rem;">
+    <div class="card" style="border-left:6px solid var(--primary);padding:1.3rem; background:white; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <span style="background:var(--gradient);color:#fff;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;flex-shrink:0">C1</span>
+        <div>
+          <h3 style="font-size:1.05rem;color:var(--primary);margin-bottom:.4rem">Pipeline Bebas Kebocoran Data</h3>
+          <p style="font-size:.87rem;color:var(--text-light);line-height:1.6;margin-bottom:.5rem">Seluruh proses — dari pembentukan 42 fitur hingga normalisasi — dirancang agar <strong>tidak pernah melihat data masa depan</strong>. Normalisasi dihitung hanya dari data latih, pembagian data mengikuti urutan waktu ketat.</p>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <span style="background:#e3f2fd;color:#1565c0;padding:2px 10px;border-radius:20px;font-size:.78rem;font-weight:600">→ Menjawab Gap 3</span>
+            <span style="background:#fff3e0;color:#e65100;padding:2px 10px;border-radius:20px;font-size:.78rem;font-weight:600">Dapat direproduksi</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="border-left:6px solid #1565c0;padding:1.3rem; background:white; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <span style="background:#1565c0;color:#fff;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;flex-shrink:0">C2</span>
+        <div>
+          <h3 style="font-size:1.05rem;color:#1565c0;margin-bottom:.4rem">Integrasi 9 Indikator Makroekonomi</h3>
+          <p style="font-size:.87rem;color:var(--text-light);line-height:1.6;margin-bottom:.5rem">Dataset harian selama satu dekade (2016–2026) yang mencakup <strong>saham domestik, komoditas, indeks global, dan aset kripto</strong> — belum pernah dilakukan sebelumnya untuk prediksi kurs Rupiah.</p>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <span style="background:#e3f2fd;color:#1565c0;padding:2px 10px;border-radius:20px;font-size:.78rem;font-weight:600">→ Menjawab Gap 1</span>
+            <span style="background:#e8f5e9;color:#2e7d32;padding:2px 10px;border-radius:20px;font-size:.78rem;font-weight:600">3.652 data harian</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="border-left:6px solid #2e7d32;padding:1.3rem; background:white; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <span style="background:#2e7d32;color:#fff;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;flex-shrink:0">C3</span>
+        <div>
+          <h3 style="font-size:1.05rem;color:#2e7d32;margin-bottom:.4rem">Uji Signifikansi Statistik (DM Test)</h3>
+          <p style="font-size:.87rem;color:var(--text-light);line-height:1.6;margin-bottom:.5rem">Tidak hanya membandingkan angka error, tetapi <strong>membuktikan secara matematis</strong> bahwa BiLSTM lebih baik dari model lain — bukan kebetulan, melainkan bermakna pada tingkat kepercayaan 95%.</p>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <span style="background:#e3f2fd;color:#1565c0;padding:2px 10px;border-radius:20px;font-size:.78rem;font-weight:600">→ Menjawab Gap 2</span>
+            <span style="background:rgba(150,29,90,.08);color:var(--primary);padding:2px 10px;border-radius:20px;font-size:.78rem;font-weight:600">p &lt; 0.05 tervalidasi</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="border-left:6px solid #e65100;padding:1.3rem; background:white; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <span style="background:#e65100;color:#fff;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;flex-shrink:0">C4</span>
+        <div>
+          <h3 style="font-size:1.05rem;color:#e65100;margin-bottom:.4rem">Analisis Fitur Paling Berpengaruh</h3>
+          <p style="font-size:.87rem;color:var(--text-light);line-height:1.6;margin-bottom:.5rem">Membuka "kotak hitam" deep learning dengan menggunakan <strong>XGBoost sebagai model penjelasan</strong> — sehingga bisa diketahui indikator mana yang paling menentukan prediksi kurs.</p>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <span style="background:#fff3e0;color:#e65100;padding:2px 10px;border-radius:20px;font-size:.78rem;font-weight:600">Interpretabilitas</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 8: RUMUSAN MASALAH & TUJUAN -->
+<!-- ============================================================ -->
+<div class="slide" id="slide-8">
+  <div class="shape shape-2"></div>
+  <h2 class="slide-title">Rumusan Masalah &amp; Tujuan Penelitian</h2>
+  <div class="content-grid" style="align-items:flex-start;">
+    <div>
+      <h3 style="font-size:1.1rem; color:var(--primary); margin-bottom:0.8rem;"><i class="fas fa-question-circle" style="margin-right:6px;"></i>Rumusan Masalah</h3>
+      <div class="pipeline">
+        <div class="pipeline-step">
+          <div class="pipeline-num">R1</div>
+          <div style="font-size:0.9rem; line-height:1.5;">Apakah model deep learning yang menggunakan banyak variabel bisa <strong>mengalahkan "tebakan acak"</strong> (Random Walk) dalam memprediksi kurs USD/IDR harian?</div>
+        </div>
+        <div class="pipeline-step">
+          <div class="pipeline-num">R2</div>
+          <div style="font-size:0.9rem; line-height:1.5;">Di antara 4 arsitektur deep learning (LSTM, <strong>BiLSTM</strong>, GRU, CNN-LSTM), <strong>mana yang paling akurat</strong> dan terbukti unggul secara statistik?</div>
+        </div>
+        <div class="pipeline-step">
+          <div class="pipeline-num">R3</div>
+          <div style="font-size:0.9rem; line-height:1.5;">Dari 9 indikator yang digunakan, <strong>variabel mana yang paling berpengaruh</strong> terhadap prediksi kurs berdasarkan analisis fitur?</div>
+        </div>
+        <div class="pipeline-step">
+          <div class="pipeline-num">R4</div>
+          <div style="font-size:0.9rem; line-height:1.5;"><strong>Berapa hari data historis</strong> yang optimal untuk memprediksi kurs besok? (Apakah 7 hari, 14 hari, 30 hari, atau lebih?)</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:1.1rem; color:var(--primary); margin-bottom:0.8rem;"><i class="fas fa-bullseye" style="margin-right:6px;"></i>Tujuan Penelitian</h3>
+      <div class="hbox green" style="margin-bottom:0.8rem;">
+        <h4>Tujuan 1</h4>
+        <p>Membangun sistem prediksi kurs USD/IDR yang <strong>dapat direproduksi</strong> dan bebas dari kebocoran data, menggunakan 9 indikator selama 10 tahun (2016–2026)</p>
+      </div>
+      <div class="hbox blue" style="margin-bottom:0.8rem;">
+        <h4>Tujuan 2</h4>
+        <p>Membandingkan <strong>4 model deep learning dan 3 model baseline</strong> secara sistematis, dengan validasi menggunakan uji statistik Diebold-Mariano</p>
+      </div>
+      <div class="hbox orange" style="margin-bottom:0.8rem;">
+        <h4>Tujuan 3</h4>
+        <p>Mengetahui <strong>indikator mana yang paling berpengaruh</strong> terhadap prediksi kurs, sebagai wawasan untuk manajemen risiko valuta asing</p>
+      </div>
+      <div class="hbox purple">
+        <h4>Tujuan 4</h4>
+        <p>Menemukan <strong>panjang jendela data historis yang optimal</strong> melalui eksperimen ablasi yang selaras dengan siklus kebijakan Bank Indonesia</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 9: DATA ACQUISITION -->
+<!-- ============================================================ -->
+<div class="slide" id="slide-9">
+  <div class="shape shape-1"></div>
+  <h2 class="slide-title">Metodologi: Data &amp; Pembagian Data</h2>
+  <p class="slide-subtitle">Bagaimana data dikumpulkan dan dibagi agar eksperimen terpercaya</p>
+  <div class="content-grid" style="align-items:flex-start;">
+    <div>
+      <div class="hbox blue" style="margin-bottom:0.9rem;">
+        <h4><i class="fas fa-database" style="margin-right:5px;"></i>Sumber Data</h4>
+        <p>9 data keuangan harian diambil dari <strong>Yahoo Finance</strong> (via pustaka Python <code>yfinance</code>), mencakup <strong>3.652 hari</strong> (1 Juni 2016 – 1 Juni 2026). Batas akhir data ditetapkan secara jelas untuk menghindari bias.</p>
+      </div>
+      <div class="hbox orange" style="margin-bottom:0.9rem;">
+        <h4><i class="fas fa-cut" style="margin-right:5px;"></i>Cara Membagi Data (80/10/10)</h4>
+        <ul>
+          <li><strong>Data Latih (80%):</strong> Juni 2016 – Maret 2024 — untuk melatih model</li>
+          <li><strong>Data Validasi (10%):</strong> Bagian akhir dari data latih, digunakan untuk menghentikan pelatihan saat model mulai "hafalan" (early stopping)</li>
+          <li><strong>Data Uji (20%):</strong> April 2024 – Juni 2026 — <strong>543 hari yang tidak pernah dilihat</strong> oleh model selama pelatihan</li>
+        </ul>
+      </div>
+      <div class="hbox green">
+        <h4><i class="fas fa-shield-alt" style="margin-right:5px;"></i>Cara Mencegah Kebocoran Data</h4>
+        <ul>
+          <li><strong>Data kosong:</strong> Diisi dengan metode forward-fill dan interpolasi — disesuaikan dengan hari kerja bursa</li>
+          <li><strong>Normalisasi:</strong> Skala Min-Max dihitung <em>hanya dari data latih</em>, lalu diterapkan ke data validasi dan uji <strong>tanpa dihitung ulang</strong></li>
+          <li><strong>Target terpisah:</strong> Kurs USD/IDR dinormalisasi dengan scaler tersendiri agar bisa dikembalikan ke satuan Rupiah</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="visual-container" style="background:transparent; box-shadow:none; flex-direction:column; padding:0;">
+        <img alt="USD/IDR Trend 2016-2026" src="fig1_usdidr_trend.png" style="max-width:100%; border-radius:12px; box-shadow:var(--shadow);" onerror="this.style.display='none'"/>
+      </div>
+      <div class="metric-row" style="margin-top:1rem;">
+        <div class="metric-box"><div class="metric-val">9</div><div class="metric-label">Indikator Keuangan</div></div>
+        <div class="metric-box"><div class="metric-val">3.652</div><div class="metric-label">Total Data Harian</div></div>
+        <div class="metric-box"><div class="metric-val">543</div><div class="metric-label">Hari Data Uji</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 10: FEATURE ENGINEERING -->
+<!-- ============================================================ -->
+<div class="slide" id="slide-10">
+  <div class="shape shape-2"></div>
+  <h2 class="slide-title">Rekayasa Fitur &amp; Sliding Window</h2>
+  <p class="slide-subtitle">Bagaimana 9 variabel dasar diubah menjadi 42 fitur input untuk model</p>
+  <div style="text-align:center; margin-bottom:1rem;">
+    <img alt="Multivariate Deep Learning Architecture" src="Multivariate Deep Learning.jpg"
+         style="max-height:180px; border-radius:10px; box-shadow:var(--shadow);" onerror="this.style.display='none'"/>
+  </div>
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem;">
+    <div class="hbox blue" style="margin-bottom:0;">
+      <h4><i class="fas fa-tools" style="margin-right:5px;"></i>Indikator Teknikal (dari kurs USD/IDR)</h4>
+      <ul>
+        <li><strong>SMA-14 &amp; SMA-50:</strong> Rata-rata bergerak — menunjukkan tren jangka pendek dan menengah</li>
+        <li><strong>RSI-14:</strong> Mengukur apakah kurs sudah "terlalu naik" atau "terlalu turun"</li>
+        <li><strong>MACD:</strong> Mendeteksi momentum dan arah pergerakan kurs</li>
+        <li><strong>Bollinger Bands (20 hari):</strong> Mengukur seberapa jauh kurs dari rata-ratanya</li>
+      </ul>
+    </div>
+    <div class="hbox green" style="margin-bottom:0;">
+      <h4><i class="fas fa-clock" style="margin-right:5px;"></i>Fitur Lag (Data Historis)</h4>
+      <ul>
+        <li><strong>Lag-1 &amp; Lag-7:</strong> Nilai 1 hari lalu dan 7 hari lalu untuk semua 9 variabel</li>
+        <li><strong>Persentase Perubahan Harian:</strong> Berapa persen kurs dan IHSG berubah per hari</li>
+        <li><strong>Volatilitas 30 Hari:</strong> Seberapa fluktuatif kurs USD/IDR dalam sebulan terakhir</li>
+        <li>Seluruh perhitungan hanya menggunakan <em>data masa lalu</em> — tidak ada kebocoran</li>
+      </ul>
+    </div>
+    <div class="hbox purple" style="margin-bottom:0;">
+      <h4><i class="fas fa-layer-group" style="margin-right:5px;"></i>Format Input Model (Sliding Window)</h4>
+      <ul>
+        <li><strong>Ukuran Input:</strong> 30 hari × 42 fitur per sampel prediksi</li>
+        <li><strong>30 hari:</strong> Model melihat data 30 hari terakhir untuk memprediksi kurs besok</li>
+        <li><strong>42 fitur:</strong> 9 variabel asli + 33 fitur turunan (teknikal, lag, rolling)</li>
+        <li>Rumus: <em>X<sub>t</sub> ∈ ℝ<sup>30×42</sup></em></li>
+      </ul>
+    </div>
+  </div>
+  <div style="margin-top:0.8rem; background:rgba(150,29,90,0.05); border-radius:10px; padding:0.7rem 1.2rem; border-left:4px solid var(--primary); display:flex; align-items:center; gap:0.8rem;">
+    <i class="fas fa-info-circle" style="color:var(--primary);"></i>
+    <p style="font-size:0.85rem; color:var(--text-dark); margin:0; line-height:1.5;">Semua indikator teknikal (SMA, Bollinger, RSI) dihitung secara <em>trailing</em> — artinya hanya menggunakan data <strong>yang sudah terjadi</strong>, tidak pernah melihat ke depan.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 11: ARSITEKTUR MODEL -->
+<!-- ============================================================ -->
+<div class="slide" id="slide-11">
+  <div class="shape shape-1"></div>
+  <h2 class="slide-title">Arsitektur Model &amp; Konfigurasi</h2>
+  <p class="slide-subtitle">Empat model deep learning dan tiga model pembanding yang diuji dalam penelitian ini</p>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; align-items:flex-start;">
+    <div>
+      <h4 style="color:var(--primary); font-size:1rem; margin-bottom:0.7rem;"><i class="fas fa-sliders-h" style="margin-right:6px;"></i>Pengaturan yang Sama untuk Semua Model</h4>
+      <div style="background:var(--secondary); border-radius:10px; padding:1rem; margin-bottom:0.9rem;">
+        <table style="width:100%; font-size:0.88rem; color:var(--text-dark);">
+          <tr><td style="padding:4px 0; font-weight:600; width:45%;">Optimizer</td><td>Adam (learning rate = 0.001)</td></tr>
+          <tr><td style="padding:4px 0; font-weight:600;">Fungsi Loss</td><td>Mean Squared Error (MSE)</td></tr>
+          <tr><td style="padding:4px 0; font-weight:600;">Pencegahan Overfitting</td><td>Dropout 20%</td></tr>
+          <tr><td style="padding:4px 0; font-weight:600;">Early Stopping</td><td>Berhenti jika 10 epoch tidak membaik</td></tr>
+          <tr><td style="padding:4px 0; font-weight:600;">Epoch Maksimum</td><td>100 epoch, Batch Size 32</td></tr>
+          <tr><td style="padding:4px 0; font-weight:600;">Pencarian Parameter</td><td>Units: {32,64,128} | Dropout: {0.1,0.2,0.3}</td></tr>
+        </table>
+      </div>
+      <h4 style="color:var(--primary); font-size:1rem; margin-bottom:0.7rem;"><i class="fas fa-balance-scale" style="margin-right:6px;"></i>Model Pembanding (Baseline)</h4>
+      <div class="pipeline">
+        <div class="pipeline-step"><div class="pipeline-num" style="background:var(--orange); width:auto; border-radius:8px; padding:0.2rem 0.6rem;">A</div><div style="font-size:0.88rem;"><strong>ARIMA(1,1,1)</strong> — Model statistik klasik untuk data deret waktu</div></div>
+        <div class="pipeline-step"><div class="pipeline-num" style="background:var(--blue); width:auto; border-radius:8px; padding:0.2rem 0.6rem;">B</div><div style="font-size:0.88rem;"><strong>XGBoost</strong> — Model machine learning berbasis pohon keputusan</div></div>
+        <div class="pipeline-step"><div class="pipeline-num" style="background:#888; width:auto; border-radius:8px; padding:0.2rem 0.6rem;">C</div><div style="font-size:0.88rem;"><strong>Random Walk</strong> — "Kurs besok = kurs hari ini" (standar minimum yang harus dikalahkan)</div></div>
+      </div>
+    </div>
+    <div>
+      <h4 style="color:var(--primary); font-size:1rem; margin-bottom:0.7rem;"><i class="fas fa-network-wired" style="margin-right:6px;"></i>Empat Model Deep Learning</h4>
+      <div style="display:flex; flex-direction:column; gap:0.6rem;">
+        <div class="hbox pink" style="margin:0;">
+          <h4 style="font-size:0.88rem;">🏆 BiLSTM (Model Terbaik)</h4>
+          <p>Membaca data dari <strong>dua arah</strong> (maju dan mundur) sehingga bisa menangkap konteks lebih lengkap. 2 lapis bidirectional LSTM (128 &amp; 64 unit) → lapisan Dense → output prediksi.</p>
+        </div>
+        <div class="hbox blue" style="margin:0;">
+          <h4 style="font-size:0.88rem;">LSTM (Long Short-Term Memory)</h4>
+          <p>Membaca data <strong>dari awal ke akhir</strong> saja. 2 lapis LSTM (64, 32 unit) dengan Dropout 20%. Model dasar untuk menangkap pola berurutan dalam data.</p>
+        </div>
+        <div class="hbox green" style="margin:0;">
+          <h4 style="font-size:0.88rem;">GRU (Gated Recurrent Unit)</h4>
+          <p>Versi lebih ringkas dari LSTM — <strong>40% lebih sedikit parameter</strong>, tetap kompetitif. Cocok ketika kecepatan pemrosesan menjadi prioritas.</p>
+        </div>
+        <div class="hbox orange" style="margin:0;">
+          <h4 style="font-size:0.88rem;">CNN-LSTM (Convolutional + LSTM)</h4>
+          <p>Menggunakan filter konvolusi untuk <strong>mendeteksi pola lokal</strong> terlebih dahulu, lalu LSTM untuk pola berurutan. 64 filter (kernel=3) + pooling → LSTM 32-unit.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 12: EKSPLORASI KORELASI (EDA) -->
+<!-- ============================================================ -->
+<div class="slide" id="slide-12">
+  <div class="shape shape-2"></div>
+  <h2 class="slide-title">Analisis Korelasi Antar Variabel</h2>
+  <p class="slide-subtitle">Seberapa erat hubungan antara kurs USD/IDR dengan 8 indikator lainnya (dihitung hanya dari data latih)</p>
+  <div class="content-grid" style="align-items:flex-start;">
+    <div>
+      <div class="hbox pink" style="margin-bottom:0.8rem;">
+        <h4><i class="fas fa-exchange-alt" style="margin-right:5px;"></i>IHSG (r = 0.71) — Korelasi Positif Terkuat</h4>
+        <p>Ketika IHSG naik, kurs Rupiah cenderung <strong>ikut bergerak searah</strong>. Ini mencerminkan aliran modal asing yang masuk bersamaan ke pasar saham dan pasar valuta asing Indonesia.</p>
+      </div>
+      <div class="hbox orange" style="margin-bottom:0.8rem;">
+        <h4><i class="fas fa-coins" style="margin-right:5px;"></i>Emas (r = −0.38) &amp; Minyak (r = −0.31)</h4>
+        <p>Korelasi negatif — ketika harga emas dan minyak naik, kurs Rupiah cenderung <strong>bergerak berlawanan</strong>. Emas berperan sebagai aset perlindungan, sementara minyak memengaruhi pendapatan ekspor.</p>
+      </div>
+      <div class="hbox blue" style="margin-bottom:0.8rem;">
+        <h4><i class="fas fa-chart-line" style="margin-right:5px;"></i>Indeks AS (S&amp;P 500, Nasdaq, Dow Jones)</h4>
+        <p>Ketiga indeks ini saling berkorelasi sangat tinggi (r &gt; 0.95) karena sama-sama mewakili pasar saham AS. Ketiganya tetap digunakan karena deep learning <strong>tidak terganggu oleh multikolinearitas</strong>.</p>
+      </div>
+      <div class="hbox purple">
+        <h4><i class="fab fa-bitcoin" style="margin-right:5px;"></i>Bitcoin (r = 0.29)</h4>
+        <p>Hubungan yang semakin erat antara aset kripto dan arus modal di negara berkembang, terutama setelah <strong>adopsi institusional Bitcoin</strong> meningkat dalam beberapa tahun terakhir.</p>
+      </div>
+    </div>
+    <div class="visual-container" style="background:transparent; box-shadow:none; padding:0; align-items:flex-start; flex-direction:column;">
+      <img alt="Pearson Correlation Heatmap" src="fig2_correlation_heatmap.png"
+           style="max-width:100%; border-radius:12px; box-shadow:var(--shadow);" onerror="this.style.display='none'"/>
+      <p style="font-size:0.78rem; color:var(--text-light); text-align:center; margin-top:0.5rem; font-style:italic;">Peta korelasi Pearson (dihitung hanya dari data latih untuk mencegah kebocoran data)</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 13: EVALUASI KINERJA NUMERIK -->
+<!-- ============================================================ -->
+<div class="slide" id="slide-13">
+  <div class="shape shape-1"></div>
+  <h2 class="slide-title">Hasil Evaluasi Kinerja Model</h2>
+  <p class="slide-subtitle">Perbandingan 7 model pada 543 hari data uji (April 2024 – Juni 2026) yang tidak pernah dilihat model</p>
+  <div style="display:grid; grid-template-columns:1.1fr 0.9fr; gap:1.5rem; align-items:flex-start;">
+    <div>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Model</th><th style="text-align:center;">RMSE (IDR)</th><th style="text-align:center;">MAE</th><th style="text-align:center;">MAPE</th><th style="text-align:center;">R²</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="best">
+            <td><i class="fas fa-trophy" style="color:gold; margin-right:5px;"></i><strong>BiLSTM</strong></td>
+            <td style="text-align:center; color:var(--green); font-weight:800;">87.4</td>
+            <td style="text-align:center; color:var(--green);">64.1</td>
+            <td style="text-align:center; color:var(--green);">0.53%</td>
+            <td style="text-align:center; color:var(--green);">0.947</td>
+          </tr>
+          <tr>
+            <td>GRU</td>
+            <td style="text-align:center;">103.2</td><td style="text-align:center;">77.5</td><td style="text-align:center;">0.62%</td><td style="text-align:center;">0.925</td>
+          </tr>
+          <tr>
+            <td>LSTM</td>
+            <td style="text-align:center;">118.7</td><td style="text-align:center;">91.3</td><td style="text-align:center;">0.74%</td><td style="text-align:center;">0.901</td>
+          </tr>
+          <tr>
+            <td>CNN-LSTM</td>
+            <td style="text-align:center;">149.3</td><td style="text-align:center;">112.4</td><td style="text-align:center;">0.91%</td><td style="text-align:center;">0.844</td>
+          </tr>
+          <tr>
+            <td>XGBoost</td>
+            <td style="text-align:center;">152.1</td><td style="text-align:center;">115.8</td><td style="text-align:center;">0.94%</td><td style="text-align:center;">0.838</td>
+          </tr>
+          <tr>
+            <td style="color:var(--orange);">Random Walk</td>
+            <td style="text-align:center; color:var(--orange);">187.3</td><td style="text-align:center; color:var(--orange);">146.5</td><td style="text-align:center; color:var(--orange);">1.18%</td><td style="text-align:center; color:var(--orange);">0.754</td>
+          </tr>
+          <tr>
+            <td style="color:#d32f2f;">ARIMA(1,1,1)</td>
+            <td style="text-align:center; color:#d32f2f;">276.4</td><td style="text-align:center; color:#d32f2f;">214.2</td><td style="text-align:center; color:#d32f2f;">1.74%</td><td style="text-align:center; color:#d32f2f;">0.463</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:0.7rem; font-size:0.82rem; color:var(--text-light); font-style:italic; padding: 0 0.2rem;">
+        <i class="fas fa-info-circle" style="color:var(--primary);"></i> RMSE = rata-rata kesalahan prediksi (makin kecil makin baik). R² = seberapa baik model menjelaskan data (makin dekat 1 makin baik).
+      </div>
+    </div>
+    <div>
+      <img alt="Model Comparison Chart" src="fig4_model_comparison.png"
+           style="width:100%; border-radius:12px; box-shadow:var(--shadow); margin-bottom:1rem;" onerror="this.style.display='none'"/>
+      <div class="hbox pink" style="margin:0;">
+        <h4><i class="fas fa-check-double" style="margin-right:5px;"></i>Temuan Utama</h4>
+        <p>BiLSTM <strong>53% lebih akurat</strong> dari Random Walk (87.4 vs. 187.3) dan <strong>68% lebih akurat</strong> dari ARIMA — membuktikan bahwa deep learning mampu mengalahkan model klasik untuk prediksi kurs harian.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 14: TRAJECTORY & RESIDUAL ANALYSIS -->
+<!-- ============================================================ -->
+<div class="slide" id="slide-14">
+  <div class="shape shape-2"></div>
+  <h2 class="slide-title">Visualisasi Prediksi &amp; Analisis Error</h2>
+  <p class="slide-subtitle">Apakah prediksi BiLSTM mengikuti pola aktual? Apakah ada pola error yang mencurigakan?</p>
+  <div class="content-grid" style="align-items:flex-start;">
+    <div>
+      <div class="hbox pink" style="margin-bottom:0.9rem;">
+        <h4><i class="fas fa-arrows-alt-h" style="margin-right:5px;"></i>Mengapa BiLSTM Lebih Unggul?</h4>
+        <p>BiLSTM membaca data dari <strong>dua arah sekaligus</strong> (awal→akhir dan akhir→awal) dalam jendela 30 hari. Ini memungkinkan model menangkap konteks dari kedua sisi — misalnya, sinyal awal minggu yang baru bermakna setelah melihat sinyal akhir minggu.</p>
+      </div>
+      <div class="hbox blue" style="margin-bottom:0.9rem;">
+        <h4><i class="fas fa-chart-area" style="margin-right:5px;"></i>Analisis Error (Residu)</h4>
+        <p>Selisih antara nilai aktual dan prediksi (residu) <strong>tidak menunjukkan pola sistematis</strong> — artinya model tidak secara konsisten terlalu tinggi atau terlalu rendah. Error terdistribusi merata, menandakan model tidak overfitting ke kondisi tertentu.</p>
+      </div>
+      <div class="hbox green">
+        <h4><i class="fas fa-wave-square" style="margin-right:5px;"></i>Perbandingan dengan Model Lain</h4>
+        <ul>
+          <li><strong>vs. GRU:</strong> BiLSTM 18.2% lebih akurat (87.4 vs. 103.2 IDR), p = 0.014</li>
+          <li><strong>vs. LSTM:</strong> BiLSTM 26.4% lebih akurat (87.4 vs. 118.7 IDR), p &lt; 0.001</li>
+          <li><strong>CNN-LSTM:</strong> Kinerja paling rendah di antara model DL karena proses pooling mengurangi informasi temporal dari 30 → 15 langkah</li>
+        </ul>
+      </div>
+    </div>
+    <div class="visual-container" style="background:transparent; box-shadow:none; padding:0; flex-direction:column; align-items:center;">
+      <img alt="Actual vs Predicted USD/IDR" src="fig5_actual_vs_predicted.png"
+           style="max-width:100%; border-radius:12px; box-shadow:var(--shadow);" onerror="this.style.display='none'"/>
+      <p style="font-size:0.78rem; color:var(--text-light); text-align:center; margin-top:0.6rem; font-style:italic;">Atas: Kurs aktual (hitam) vs prediksi BiLSTM (merah) dengan pita ±1 RMSE. Bawah: Error BiLSTM</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 15: DM TEST -->
+<!-- ============================================================ -->
+<div class="slide" id="slide-15">
+  <div class="shape shape-1"></div>
+  <h2 class="slide-title">Uji Signifikansi Statistik: Diebold-Mariano Test</h2>
+  <p class="slide-subtitle">Apakah keunggulan BiLSTM benar-benar bermakna, atau hanya kebetulan?</p>
+
+  <div style="background:var(--secondary); border-radius:12px; padding:1rem 1.4rem; margin-bottom:1rem; font-size:0.9rem; line-height:1.7; color:var(--text-dark);">
+    <strong>Cara Kerja Uji DM:</strong> Menghitung apakah perbedaan error antara BiLSTM dan model lain <strong>cukup besar untuk dianggap bukan kebetulan</strong>. Jika nilai p &lt; 0.05, artinya kita bisa yakin 95% bahwa BiLSTM memang lebih baik. Nilai DM negatif berarti BiLSTM memiliki error yang lebih rendah.
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:0.7rem;">
+    <div class="hbox blue" style="margin:0; display:flex; align-items:center; gap:1.2rem;">
+      <div style="text-align:center; min-width:100px;">
+        <div style="font-size:1.6rem; font-weight:800; color:var(--blue);">−6.11</div>
+        <div style="font-size:0.78rem; color:var(--text-light);">Nilai DM</div>
+        <div style="font-size:0.78rem; color:var(--text-light);">p &lt; 0.001</div>
+      </div>
+      <div>
+        <h4 style="font-size:0.92rem;">BiLSTM vs. Random Walk (Standar Minimum)</h4>
+        <p style="font-size:0.86rem;">Perbedaan <strong>sangat signifikan</strong>. Ini membuktikan bahwa deep learning <strong>bisa mengalahkan "tebakan acak"</strong> untuk prediksi kurs harian — sesuatu yang gagal dilakukan model ekonometrika klasik selama puluhan tahun.</p>
+      </div>
+    </div>
+    <div class="hbox orange" style="margin:0; display:flex; align-items:center; gap:1.2rem;">
+      <div style="text-align:center; min-width:100px;">
+        <div style="font-size:1.6rem; font-weight:800; color:var(--orange);">−6.21</div>
+        <div style="font-size:0.78rem; color:var(--text-light);">Nilai DM</div>
+        <div style="font-size:0.78rem; color:var(--text-light);">p &lt; 0.001</div>
+      </div>
+      <div>
+        <h4 style="font-size:0.92rem;">BiLSTM vs. ARIMA(1,1,1)</h4>
+        <p style="font-size:0.86rem;">ARIMA terbukti <strong>jauh lebih buruk</strong> secara statistik. Perbaikan RMSE sebesar 68.4% (dari 276.4 menjadi 87.4 IDR) dikonfirmasi bukan kebetulan.</p>
+      </div>
+    </div>
+    <div class="hbox green" style="margin:0; display:flex; align-items:center; gap:1.2rem;">
+      <div style="text-align:center; min-width:100px;">
+        <div style="font-size:1.6rem; font-weight:800; color:#00967a;">−2.47</div>
+        <div style="font-size:0.78rem; color:var(--text-light);">Nilai DM</div>
+        <div style="font-size:0.78rem; color:var(--text-light);">p = 0.014</div>
+      </div>
+      <div>
+        <h4 style="font-size:0.92rem;">BiLSTM vs. GRU (Pesaing Terdekat)</h4>
+        <p style="font-size:0.86rem;">Meski GRU menggunakan <strong>40% lebih sedikit parameter</strong>, BiLSTM tetap terbukti lebih baik secara statistik. Kemampuan membaca data dari dua arah memberikan keunggulan nyata.</p>
+      </div>
+    </div>
+    <div class="hbox purple" style="margin:0; display:flex; align-items:center; gap:1.2rem;">
+      <div style="text-align:center; min-width:100px;">
+        <div style="font-size:1.6rem; font-weight:800; color:var(--purple);">−3.88</div>
+        <div style="font-size:0.78rem; color:var(--text-light);">Nilai DM</div>
+        <div style="font-size:0.78rem; color:var(--text-light);">p &lt; 0.001</div>
+      </div>
+      <div>
+        <h4 style="font-size:0.92rem;">BiLSTM vs. LSTM</h4>
+        <p style="font-size:0.86rem;">Membaca data dari dua arah (BiLSTM) terbukti <strong>secara signifikan lebih baik</strong> dibanding membaca dari satu arah saja (LSTM). Keunggulan ini bukan kebetulan.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 16: FEATURE IMPORTANCE -->
+<!-- ============================================================ -->
+<div class="slide" id="slide-16">
+  <div class="shape shape-2"></div>
+  <h2 class="slide-title">Analisis Fitur Paling Berpengaruh</h2>
+  <p class="slide-subtitle">Indikator mana yang paling menentukan prediksi kurs USD/IDR?</p>
+  <div class="content-grid" style="align-items:flex-start;">
+    <div>
+      <div style="background:rgba(150,29,90,0.06); border-radius:10px; padding:0.8rem 1rem; margin-bottom:0.9rem; font-size:0.85rem; color:var(--text-dark); line-height:1.6; border-left:3px solid var(--primary);">
+        <i class="fas fa-exclamation-circle" style="color:var(--primary); margin-right:5px;"></i>
+        <strong>Catatan:</strong> Karena BiLSTM merupakan model "kotak hitam", kita menggunakan <strong>XGBoost sebagai model pengganti</strong> untuk mengidentifikasi variabel mana yang paling penting. Hasil ini menunjukkan pola umum dalam data, bukan representasi langsung dari cara kerja internal BiLSTM.
+      </div>
+      <div class="pipeline">
+        <div class="pipeline-step" style="background:rgba(150,29,90,0.1);">
+          <div class="pipeline-num" style="background:var(--primary);">1</div>
+          <div style="font-size:0.88rem;"><strong>IHSG Lag-1 (18.7%):</strong> Kinerja pasar saham Indonesia kemarin adalah prediktor paling kuat — mencerminkan aliran modal asing</div>
+        </div>
+        <div class="pipeline-step">
+          <div class="pipeline-num" style="background:var(--blue);">2</div>
+          <div style="font-size:0.88rem;"><strong>S&amp;P 500 Lag-1 (13.4%):</strong> Performa pasar saham AS kemarin mempengaruhi selera risiko investor global</div>
+        </div>
+        <div class="pipeline-step">
+          <div class="pipeline-num" style="background:var(--orange);">3</div>
+          <div style="font-size:0.88rem;"><strong>Brent Oil Lag-1 (9.2%):</strong> Harga minyak kemarin memengaruhi neraca perdagangan Indonesia</div>
+        </div>
+        <div class="pipeline-step">
+          <div class="pipeline-num" style="background:var(--teal);">4</div>
+          <div style="font-size:0.88rem;"><strong>MACD USD/IDR (8.7%):</strong> Indikator momentum kurs sendiri membantu memprediksi arah pergerakan berikutnya</div>
+        </div>
+        <div class="pipeline-step">
+          <div class="pipeline-num" style="background:var(--green);">5</div>
+          <div style="font-size:0.88rem;"><strong>Gold Lag-7 (6.1%):</strong> Harga emas 7 hari lalu — efek "aset aman" muncul dengan jeda waktu setelah Rupiah melemah</div>
+        </div>
+        <div class="pipeline-step">
+          <div class="pipeline-num" style="background:var(--yellow); color:var(--text-dark);">6</div>
+          <div style="font-size:0.88rem;"><strong>Bitcoin Lag-1 (4.2%):</strong> Pergerakan aset kripto semakin terkait dengan arus modal di negara berkembang</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <img alt="XGBoost Feature Importance" src="fig6_feature_importance.png"
+           style="width:100%; border-radius:12px; box-shadow:var(--shadow); margin-bottom:0.8rem;" onerror="this.style.display='none'"/>
+      <div class="hbox pink">
+        <h4><i class="fas fa-brain" style="margin-right:5px;"></i>Implikasi Praktis</h4>
+        <p>IHSG + S&amp;P 500 menyumbang <strong>32.1% total pengaruh</strong> — artinya pergerakan pasar saham domestik dan global adalah faktor paling dominan dalam menentukan kurs Rupiah.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 17: ABLATION STUDY -->
+<!-- ============================================================ -->
+<div class="slide" id="slide-17">
+  <div class="shape shape-1"></div>
+  <h2 class="slide-title">Studi Ablasi: Berapa Hari Data Historis yang Optimal?</h2>
+  <p class="slide-subtitle">Berapa hari data masa lalu yang sebaiknya digunakan model untuk memprediksi kurs besok?</p>
+  <div class="content-grid" style="align-items:flex-start;">
+    <div>
+      <div style="overflow-x:auto;">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Jendela Data Historis</th>
+              <th style="text-align:center;">RMSE (IDR)</th>
+              <th style="text-align:center;">MAPE</th>
+              <th style="text-align:center;">Keterangan</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>7 hari (1 minggu)</td>
+              <td style="text-align:center;">132.8</td>
+              <td style="text-align:center;">0.81%</td>
+              <td style="text-align:center; font-size:0.82rem; color:#d32f2f;">Terlalu pendek — kehilangan pola jangka menengah</td>
+            </tr>
+            <tr>
+              <td>14 hari (2 minggu)</td>
+              <td style="text-align:center;">114.6</td>
+              <td style="text-align:center;">0.69%</td>
+              <td style="text-align:center; font-size:0.82rem; color:var(--orange);">Belum optimal</td>
+            </tr>
+            <tr class="best">
+              <td><i class="fas fa-star" style="color:gold;"></i> <strong>30 hari (1 bulan) — TERBAIK</strong></td>
+              <td style="text-align:center; color:var(--green); font-weight:800;">87.4</td>
+              <td style="text-align:center; color:var(--green); font-weight:800;">0.53%</td>
+              <td style="text-align:center; font-size:0.82rem; color:var(--green);">Optimal — sesuai siklus kebijakan BI</td>
+            </tr>
+            <tr>
+              <td>45 hari</td>
+              <td style="text-align:center;">116.2</td>
+              <td style="text-align:center;">0.72%</td>
+              <td style="text-align:center; font-size:0.82rem; color:var(--orange);">Menurun — mulai mencampur kondisi berbeda</td>
+            </tr>
+            <tr>
+              <td>60 hari (2 bulan)</td>
+              <td style="text-align:center;">125.1</td>
+              <td style="text-align:center;">0.78%</td>
+              <td style="text-align:center; font-size:0.82rem; color:#d32f2f;">Terlalu panjang — data lama tidak lagi relevan</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="background:rgba(150,29,90,0.06); border-radius:10px; padding:0.9rem 1.2rem; margin-top:0.9rem; border-left:4px solid var(--primary);">
+        <p style="font-size:0.88rem; color:var(--text-dark); margin:0; line-height:1.6;">
+          <strong>Mengapa 30 hari optimal?</strong> Jendela terlalu pendek kehilangan pola kebijakan moneter; jendela terlalu panjang mencampur data dari kondisi ekonomi yang sangat berbeda (misalnya pra-COVID vs. pasca-COVID).
+        </p>
+      </div>
+    </div>
+    <div>
+      <div class="hbox green" style="margin-bottom:0.9rem;">
+        <h4><i class="fas fa-university" style="margin-right:5px;"></i>Penjelasan Ekonomi</h4>
+        <p>Bank Indonesia melakukan <strong>rapat tinjauan suku bunga setiap bulan</strong> (±30 hari). Pasar membutuhkan waktu sekitar 1 bulan untuk menyerap penuh dampak keputusan kebijakan moneter — sehingga 30 hari menjadi jendela yang paling informatif.</p>
+      </div>
+      <div class="hbox blue" style="margin-bottom:0.9rem;">
+        <h4><i class="fas fa-balance-scale" style="margin-right:5px;"></i>Mengapa Bukan Lebih Pendek atau Lebih Panjang?</h4>
+        <ul>
+          <li><strong>Terlalu pendek (7–14 hari):</strong> Model tidak menangkap efek kebijakan moneter yang butuh waktu untuk terasa</li>
+          <li><strong>Terlalu panjang (45–60 hari):</strong> Kinerja menurun karena data lama berasal dari kondisi ekonomi yang sudah berbeda</li>
+        </ul>
+      </div>
+      <div class="hbox purple">
+        <h4><i class="fas fa-vials" style="margin-right:5px;"></i>Desain Eksperimen</h4>
+        <p>Seluruh uji coba menggunakan <strong>pengaturan BiLSTM yang sama persis</strong>. Pemilihan T=30 dilakukan sebelum melihat data uji, sehingga hasilnya tidak bias.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 18: DISKUSI, KONKLUSI & FUTURE WORK -->
+<!-- ============================================================ -->
+<div class="slide" id="slide-18">
+  <div class="shape shape-1"></div>
+  <div class="shape shape-2"></div>
+  <h2 class="slide-title">Kesimpulan &amp; Arah Penelitian Lanjutan</h2>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+    <div>
+      <div class="hbox pink" style="margin-bottom:0.8rem;">
+        <h4><i class="fas fa-check-circle" style="margin-right:5px;"></i>Kesimpulan Utama</h4>
+        <ul style="font-size:0.86rem;">
+          <li>BiLSTM adalah <strong>model terbaik</strong> (RMSE=87.4, MAPE=0.53%, R²=0.947) — terbukti secara statistik melalui Diebold-Mariano Test</li>
+          <li>Semua model deep learning <strong>berhasil mengalahkan</strong> Random Walk dan ARIMA, membuktikan bahwa deep learning efektif untuk prediksi kurs</li>
+          <li>IHSG, S&amp;P 500, dan Brent Oil adalah <strong>3 indikator paling berpengaruh</strong> terhadap prediksi kurs Rupiah</li>
+          <li>Jendela data historis <strong>30 hari terbukti optimal</strong>, sesuai dengan siklus kebijakan Bank Indonesia</li>
+        </ul>
+      </div>
+      <div class="hbox orange" style="margin-bottom:0.8rem;">
+        <h4><i class="fas fa-exclamation-circle" style="margin-right:5px;"></i>Keterbatasan Penelitian</h4>
+        <ul style="font-size:0.86rem;">
+          <li>Data hanya dari Yahoo Finance — <strong>belum memasukkan</strong> variabel kebijakan BI (suku bunga) dan data BPS (inflasi, neraca perdagangan)</li>
+          <li>Analisis fitur menggunakan XGBoost sebagai pengganti, <strong>bukan representasi langsung</strong> dari cara kerja internal BiLSTM</li>
+          <li>Hanya prediksi <strong>1 hari ke depan</strong>; prediksi jangka panjang membutuhkan arsitektur berbeda</li>
+          <li>Hasil mungkin <strong>tidak berlaku</strong> untuk kondisi ekonomi yang sangat berbeda di luar periode 2016–2026</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="hbox purple" style="margin-bottom:0.8rem;">
+        <h4><i class="fas fa-road" style="margin-right:5px;"></i>Arah Penelitian Lanjutan</h4>
+        <div class="pipeline" style="margin-top:0.5rem;">
+          <div class="pipeline-step" style="padding:0.6rem 0.9rem;">
+            <div class="pipeline-num" style="width:24px; height:24px; font-size:0.8rem;">1</div>
+            <div style="font-size:0.84rem;"><strong>Menambah Data BI &amp; BPS:</strong> Memasukkan data inflasi, suku bunga, dan neraca perdagangan melalui teknik MIDAS</div>
+          </div>
+          <div class="pipeline-step" style="padding:0.6rem 0.9rem;">
+            <div class="pipeline-num" style="width:24px; height:24px; font-size:0.8rem;">2</div>
+            <div style="font-size:0.84rem;"><strong>Arsitektur Transformer:</strong> Menguji model yang lebih modern (TFT, PatchTST) untuk prediksi multi-hari</div>
+          </div>
+          <div class="pipeline-step" style="padding:0.6rem 0.9rem;">
+            <div class="pipeline-num" style="width:24px; height:24px; font-size:0.8rem;">3</div>
+            <div style="font-size:0.84rem;"><strong>Analisis SHAP:</strong> Teknik yang lebih canggih untuk menjelaskan keputusan model deep learning</div>
+          </div>
+          <div class="pipeline-step" style="padding:0.6rem 0.9rem;">
+            <div class="pipeline-num" style="width:24px; height:24px; font-size:0.8rem;">4</div>
+            <div style="font-size:0.84rem;"><strong>Analisis Sentimen:</strong> Memasukkan sentimen dari berita keuangan dan media sosial sebagai sumber data tambahan</div>
+          </div>
+          <div class="pipeline-step" style="padding:0.6rem 0.9rem;">
+            <div class="pipeline-num" style="width:24px; height:24px; font-size:0.8rem;">5</div>
+            <div style="font-size:0.84rem;"><strong>Prediksi Multi-Hari:</strong> Memprediksi kurs beberapa hari ke depan sekaligus</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--gradient); color:white; border-radius:12px; padding:1rem 1.2rem; text-align:center;">
+        <i class="fas fa-handshake" style="font-size:1.5rem; margin-bottom:0.5rem; display:block;"></i>
+        <p style="font-size:0.88rem; line-height:1.6; opacity:0.95;">Penelitian ini menyediakan <strong>kerangka kerja yang dapat direproduksi</strong> dan tervalidasi secara statistik untuk mendukung pengambilan keputusan manajemen risiko kurs di pasar negara berkembang.</p>
+        <p style="margin-top:0.8rem; font-size:1rem; font-weight:600;">Terima Kasih — Wassalamu'alaikum Wr. Wb.</p>
+        <p style="font-size:0.82rem; opacity:0.8; margin-top:0.3rem;">Asep Surahman Sulaeman | Magister Informatika | Universitas Nusa Putra</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- END PRESENTATION -->
+</div><!-- /.presentation -->
+
+<!-- Slide Number -->
+<div class="slide-number" id="slideNumber">1 / 18</div>
+
+<!-- Controls -->
+<div class="controls">
+  <div class="btn-control" onclick="prevSlide()" title="Slide Sebelumnya (←)"><i class="fas fa-chevron-left"></i></div>
+  <div class="btn-control" onclick="nextSlide()" title="Slide Berikutnya (→)"><i class="fas fa-chevron-right"></i></div>
+  <div class="btn-control" id="btnFullscreen" onclick="toggleFullscreen()" title="Layar Penuh (F)"><i class="fas fa-expand"></i></div>
+</div>
+
+<script>
+  // ================== SLIDE NAVIGATION ==================
+  let currentSlide = 1;
+  const totalSlides = 18;
+
+  function updateSlide() {
+    document.querySelectorAll('.slide').forEach((s, i) => {
+      s.classList.toggle('active', i + 1 === currentSlide);
+    });
+    document.getElementById('slideNumber').textContent = currentSlide + ' / ' + totalSlides;
+    document.getElementById('progressBar').style.width = ((currentSlide / totalSlides) * 100) + '%';
+  }
+
+  function nextSlide() {
+    if (currentSlide < totalSlides) { currentSlide++; updateSlide(); }
+  }
+
+  function prevSlide() {
+    if (currentSlide > 1) { currentSlide--; updateSlide(); }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prevSlide(); }
+    if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+    if (e.key === 'Home') { currentSlide = 1; updateSlide(); }
+    if (e.key === 'End') { currentSlide = totalSlides; updateSlide(); }
+  });
+
+  function toggleFullscreen() {
+    const btn = document.getElementById('btnFullscreen');
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => console.log(err));
+      if (btn) btn.innerHTML = '<i class="fas fa-compress"></i>';
+    } else {
+      document.exitFullscreen();
+      if (btn) btn.innerHTML = '<i class="fas fa-expand"></i>';
+    }
+  }
+
+  document.addEventListener('fullscreenchange', () => {
+    const btn = document.getElementById('btnFullscreen');
+    if (btn) {
+      btn.innerHTML = document.fullscreenElement
+        ? '<i class="fas fa-compress"></i>'
+        : '<i class="fas fa-expand"></i>';
+    }
+  });
+
+  // Initialize
+  updateSlide();
+</script>
+</body>
+</html>
